@@ -1,0 +1,6 @@
+---
+- name: Build Cluster Servers
+  hosts: localhost
+  connection: local
+  roles:
+    - builder_servers

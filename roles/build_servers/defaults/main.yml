@@ -1,0 +1,4 @@
+type: standard
+storage_type: standard
+server_name: DCKSW
+os_template: coreos

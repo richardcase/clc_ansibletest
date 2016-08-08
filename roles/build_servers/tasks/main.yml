@@ -1,0 +1,22 @@
+- name: CLC | Create Docker Swarm Parent Group
+  clc_group:
+    name: "{{ groupname }}"
+    location: "{{ datacenter }}"
+    state: present
+  register: swarm_group
+
+- name: CLC | Create Docker Swarm Manager Group
+  clc_group:
+    name: "managers"
+    location: "{{ datacenter }}"
+    parent: "{{ swarm_group }}"
+    state: present
+  register: swarm_group_manager
+
+- name: CLC | Create Docker Swarm Worker Group
+  clc_group:
+    name: "workers"
+    location: "{{ datacenter }}"
+    parent: "{{ swarm_group }}"
+    state: present
+  register: swarm_group_workers

@@ -1,0 +1,71 @@
+name: Docker Cluster
+description: Create a docker cluster using docker swarm mode
+imagePath:
+shortDescription: Create a docker cluster
+updateDate: August 8, 2016
+public: false
+defaulyPlaybook: main.yml
+author: Richard Case
+orginization: CenturyLink Cloud
+orginizationUrl: http://ctl.io
+fields:
+
+    - name: datacenter
+      displayName: Location
+      type: datacenters
+      required: true
+
+    - name: groupname
+      displayName: Group name
+      type: text
+      required: true
+
+    - name: network_id
+      displayName: Network
+      type: networks
+      parent: datacenter
+      required: true
+
+    - name: manager_count
+      displayName: Number of manager nodes to create
+      type: slider
+      required: true
+      min: 1
+      max: 10
+      default: 1
+    
+    - name: worker_count
+      displayName: Number of worker nodes to create
+      type: slider
+      required: true
+      min: 1
+      max: 10
+      default: 3
+
+    - name: node_cpu
+      displayName: Server CPU
+      type: slider
+      required: true
+      min: 1
+      max: 16
+      default: 1
+
+    - name: node_mem
+      displayName: server memory (GB)
+      type: slider
+      required: true
+      min: 1
+      max: 128
+      default: 2
+
+    - name: public
+      displayName: PublicIP
+      type: toggle
+      default: false
+
+tags:
+  - docker
+  - swarm
+  - cluster
+  - coreos 
+
