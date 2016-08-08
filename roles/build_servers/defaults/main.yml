@@ -1,4 +1,5 @@
 type: standard
 storage_type: standard
-server_name: DCKSW
-os_template: coreos
+server_name_manager: DSWM
+server_name_worker: DSWW
+os_template: ubuntu-14-64

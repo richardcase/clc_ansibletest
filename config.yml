@@ -58,7 +58,7 @@ fields:
       max: 128
       default: 2
 
-    - name: public
+    - name: publicip
       displayName: PublicIP
       type: toggle
       default: false

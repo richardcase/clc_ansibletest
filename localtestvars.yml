@@ -1,0 +1,8 @@
+datacenter: GB3
+groupname: DockerSwarm
+network_id: fce42df0e9094509becb1355f966be1f
+manager_count: 1
+worker_count: 3
+node_cpu: 2
+node_mem: 8
+publicip: false

@@ -3,20 +3,93 @@
     name: "{{ groupname }}"
     location: "{{ datacenter }}"
     state: present
-  register: swarm_group
 
 - name: CLC | Create Docker Swarm Manager Group
   clc_group:
-    name: "managers"
+    name: "{{ groupname }}.managers"
     location: "{{ datacenter }}"
-    parent: "{{ swarm_group }}"
+    parent: "{{ groupname }}"
     state: present
-  register: swarm_group_manager
 
 - name: CLC | Create Docker Swarm Worker Group
   clc_group:
-    name: "workers"
+    name: "{{ groupname }}.workers"
     location: "{{ datacenter }}"
-    parent: "{{ swarm_group }}"
+    parent: "{{ groupname }}"
     state: present
-  register: swarm_group_workers
+
+- name: Generate Password
+  command: openssl rand -base64 15
+  register: serverpass
+  changed_when: False
+
+- name: CLC | Build Manager Servers if Needed
+  clc_server:
+    name: "{{ server_name_manager }}"
+    location: "{{ datacenter }}"
+    template: "{{ os_template }}"
+    password: "{{ serverpass.stdout }}"
+    exact_count: "{{ manager_count }}"
+    group: "{{ groupname }}.managers"
+    count_group: "{{ groupname }}.managers"
+    cpu: "{{ node_cpu }}"
+    memory: "{{ node_mem }}"
+    type: "{{ type }}"
+    storage_type: "{{ storage_type }}"
+  register: managers
+
+- name: CLC | Add public ipaddress to managers
+  clc_publicip:
+    server_ids: "{{ item.name }}"
+    ports:
+      - "{{ listen_port }}"
+    protocol: TCP
+    state: present
+  with_items: "{{managers.servers}}"
+  when: ("{{ publicip }}" == 'true')
+
+- name: CLC | Build Worker Servers if Needed
+  clc_server:
+    name: "{{ server_name_worker }}"
+    location: "{{ datacenter }}"
+    template: "{{ os_template }}"
+    password: "{{ serverpass.stdout }}"
+    exact_count: "{{ worker_count }}"
+    group: "{{ groupname }}.workers"
+    count_group: "{{ groupname }}.workers"
+    cpu: "{{ node_cpu }}"
+    memory: "{{ node_mem }}"
+    type: "{{ type }}"
+    storage_type: "{{ storage_type }}"
+  register: workers
+
+- name: CLC | Add public ipaddress to workers
+  clc_publicip:
+    server_ids: "{{ item.name }}"
+    ports:
+      - "{{ listen_port }}"
+    protocol: TCP
+    state: present
+  with_items: "{{workers.servers}}"
+  when: ("{{ publicip }}" == 'true')
+
+- name: Add New manager servers to an inventory
+  add_host:
+    name={{ item.name }}
+    ansible_ssh_host={{ item.ipaddress }}
+    ansible_ssh_user=root
+    ansible_ssh_pass={{ serverpass.stdout }}
+    groupname=managers
+  with_items: "{{ managers.servers }}"
+
+- name: Add New worker servers to an inventory
+  add_host:
+    name={{ item.name }}
+    ansible_ssh_host={{ item.ipaddress }}
+    ansible_ssh_user=root
+    ansible_ssh_pass={{ serverpass.stdout }}
+    groupname=workers
+  with_items: "{{ workers.servers }}"
+
+- name: Wait for SSH Services to Become Available
+  command: sleep 15
